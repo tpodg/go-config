@@ -7,7 +7,7 @@ import (
 )
 
 // Count of default providers
-var provCount = len(providers)
+var provCount = 2
 
 // Additional providers used in tests
 type pFull struct{}
@@ -19,7 +19,7 @@ func TestInitializeNewConfigWithCustomProvider(t *testing.T) {
 	c := New()
 	assertProviderCount(t, 0, len(c.providers))
 
-	c.WithCustomProviders(&pFull{})
+	c.WithProviders(&pFull{})
 	assertProviderCount(t, 1, len(c.providers))
 }
 
@@ -27,10 +27,10 @@ func TestInitializeNewConfigWithInternalAndCustomProvider(t *testing.T) {
 	c := New()
 	assertProviderCount(t, 0, len(c.providers))
 
-	c.WithProviders(Yaml, Env)
+	c.WithProviders(&Yaml{}, &Env{})
 	assertProviderCount(t, 2, len(c.providers))
 
-	c.WithCustomProviders(&pSimple{})
+	c.WithProviders(&pSimple{})
 	assertProviderCount(t, 3, len(c.providers))
 }
 
@@ -38,7 +38,7 @@ func TestInitializeInternalConfigWithAdditionalProvider(t *testing.T) {
 	c := Default()
 	assertProviderCount(t, provCount, len(c.providers))
 
-	c.WithCustomProviders(&pFull{})
+	c.WithProviders(&pFull{})
 	assertProviderCount(t, provCount+1, len(c.providers))
 }
 
@@ -55,8 +55,8 @@ func TestInterfaceKind(t *testing.T) {
 
 func TestUniquePriority(t *testing.T) {
 	c := New()
-	c.WithProviders(Env)
-	c.WithCustomProviders(&pSimple{priority: 30})
+	c.WithProviders(&Env{})
+	c.WithProviders(&pSimple{priority: 30})
 	err := c.Parse(&testCfg{})
 	if err == nil {
 		t.Fatalf("Error expected, but there is none.")
@@ -69,7 +69,7 @@ func TestUniquePriority(t *testing.T) {
 
 func TestPriorityBelowOne(t *testing.T) {
 	c := New()
-	c.WithCustomProviders(&pSimple{priority: 0})
+	c.WithProviders(&pSimple{priority: 0})
 	err := c.Parse(&testCfg{})
 	if err == nil {
 		t.Fatalf("Error expected, but there is none.")
@@ -82,7 +82,7 @@ func TestPriorityBelowOne(t *testing.T) {
 
 func TestParseConfig(t *testing.T) {
 	c := New()
-	c.WithCustomProviders(&pFull{})
+	c.WithProviders(&pFull{})
 
 	conf := &testCfg{}
 	err := c.Parse(conf)
@@ -106,7 +106,7 @@ func TestParseConfig(t *testing.T) {
 
 func TestPriorityAndSkipNonDefinedValue(t *testing.T) {
 	c := New()
-	c.WithCustomProviders(&pFull{}, &pSimple{priority: 90})
+	c.WithProviders(&pFull{}, &pSimple{priority: 90})
 
 	conf := &testCfg{}
 	err := c.Parse(conf)

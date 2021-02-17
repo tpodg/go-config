@@ -13,41 +13,25 @@ func (p *pDummy) Provide(config interface{}) error {
 }
 
 func ExampleParse() {
-	cfg := &struct {
+	cfg := struct {
 		param string
 	}{}
 
-	err := config.Parse(cfg)
-	if err != nil {
-		// ...
-	}
-}
-
-func ExampleC_WithCustomProviders() {
-	cfg := &struct {
-		param string
-	}{
-		param: "value",
-	}
-
-	c := config.New()
-	c.WithCustomProviders(&pDummy{})
-
-	err := c.Parse(cfg)
+	err := config.Parse(&cfg)
 	if err != nil {
 		// ...
 	}
 }
 
 func ExampleC_WithProviders() {
-	cfg := &struct {
+	cfg := struct {
 		param string
 	}{}
 
 	c := config.New()
-	c.WithProviders(config.Env, config.Yaml)
+	c.WithProviders(&config.Env{}, &pDummy{})
 
-	err := c.Parse(cfg)
+	err := c.Parse(&cfg)
 	if err != nil {
 		// ...
 	}

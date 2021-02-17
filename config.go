@@ -1,5 +1,5 @@
-// Package config provides support for multiple configuration sources. Configuration values can be
-// provided from multiple sources based on priority of specific configuration source (get).
+// Package config provides support for application configuration. Configuration values can be
+// provided from multiple sources based on priority of specific configuration source (provider).
 // If the same value is configured in multiple sources, value from the source with the highest
 // priority will be applied.
 package config
@@ -7,7 +7,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/tpodg/go-config/internal"
 	"reflect"
 	"sort"
 )
@@ -28,23 +27,6 @@ type C struct {
 	providers []Provider
 }
 
-var providers = [...]Provider{
-	&internal.Env{},
-	&internal.Yaml{},
-}
-
-// InternalProvider is an enum wrapper for built in providers.
-type InternalProvider int
-
-const (
-	Env InternalProvider = iota
-	Yaml
-)
-
-func (p InternalProvider) get() Provider {
-	return providers[p]
-}
-
 // New is a constructor method which initializes configuration without providers.
 func New() *C {
 	return &C{
@@ -56,22 +38,14 @@ func New() *C {
 func Default() *C {
 	return &C{
 		providers: []Provider{
-			&internal.Yaml{},
-			&internal.Env{},
+			&Yaml{},
+			&Env{},
 		},
 	}
 }
 
-// WithProviders adds built-in in providers as configuration sources. It offers customization
-// of default get configuration
-func (c *C) WithProviders(providers ...InternalProvider) {
-	for _, p := range providers {
-		c.providers = append(c.providers, p.get())
-	}
-}
-
-// WithCustomProviders adds additional providers which will be used as configuration sources.
-func (c *C) WithCustomProviders(providers ...Provider) {
+// WithProviders adds providers which will be used as configuration sources.
+func (c *C) WithProviders(providers ...Provider) {
 	c.providers = append(c.providers, providers...)
 }
 

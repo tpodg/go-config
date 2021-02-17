@@ -70,8 +70,7 @@ func main() {
 	}{}
 
 	c := config.New()
-	c.WithProviders(config.Env)
-	c.WithCustomProviders(&pDummy{})
+	c.WithProviders(&config.Env{}, &pDummy{})
 
 	err := c.Parse(&cfg)
 	if err != nil {
