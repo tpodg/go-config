@@ -1,4 +1,4 @@
-# Config
+# Go Config
 
 ### NOTE
 
@@ -9,7 +9,7 @@ od priority.
 Configuration variables in a single source can be defined only partially and multiple times in various sources.
 Configuration for the same variable will be applied from the source with the highest priority (1).
 
-The following configuration sources are provided out of the box:
+The following configuration sources are currently provided out of the box:
 
 * yaml
 * env
@@ -36,7 +36,7 @@ variables.
 ```go
 package main
 
-import "github.com/tpodg/go-kit/config"
+import "github.com/tpodg/go-config"
 
 func main() {
 	cfg := struct {
@@ -61,7 +61,7 @@ func main() {
 ```go
 package main
 
-import "github.com/tpodg/go-kit/config"
+import "github.com/tpodg/go-config"
 
 func main() {
 	cfg := struct {
