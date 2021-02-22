@@ -7,23 +7,15 @@ import (
 	"path/filepath"
 )
 
-type Env struct{}
-
-func (e *Env) Priority() int {
-	return 30
-}
-
-func (e *Env) Provide(config interface{}) error {
-	// TODO
-	return nil
-}
-
+// Yaml is a provider for configuration using yaml file
 type Yaml struct{}
 
+// Priority of yaml provider, set to 50
 func (y *Yaml) Priority() int {
 	return 50
 }
 
+// Provide loads configuration from yaml file
 func (y *Yaml) Provide(config interface{}) error {
 	b, err := readFile()
 	if err != nil {

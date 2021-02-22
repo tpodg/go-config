@@ -2,8 +2,6 @@
 
 ### NOTE
 
-**_This package is under active development and is not yet fully functional_**.
-
 Package config provides support for configuration of go applications. It supports multiple configuration sources based
 od priority.  
 Configuration variables in a single source can be defined only partially and multiple times in various sources.
@@ -21,13 +19,14 @@ configured and used with or without internal configuration providers.
 
 Configuration file is parsed with [go-yaml/yaml](https://github.com/go-yaml/yaml/tree/v3) module.
 "config.yaml" file must be in the same directory as the application executable.  
-Struct tags provided by the parsing module are supported. Priority of the provider is set to 50.
+Struct tags provided by the parsing module are supported.  
+Priority of the provider is set to 50.
 
 ### ENV
-
-**Not functional yet**  
-Priority of the provider is set to 30. This way configuration from the yaml file can be overwritten with environment
-variables.
+Environment variables should be named as uppercase field names, each nested struct name should
+be inserted with an underscore ("_") prefix and postfix (_STRUCTFIELD_).  
+Prefix of environment variables can be manually configured when env provider is initialized.  
+Priority of the provider is set to 30.
 
 ## Usage
 
@@ -70,7 +69,7 @@ func main() {
 	}{}
 
 	c := config.New()
-	c.WithProviders(&config.Env{}, &pDummy{})
+	c.WithProviders(&config.Env{Prefix: "PREF"}, &pDummy{})
 
 	err := c.Parse(&cfg)
 	if err != nil {

@@ -51,9 +51,11 @@ func (c *C) WithProviders(providers ...Provider) {
 
 // Parse loops through providers based on priority and parses configuration.
 func (c *C) Parse(config interface{}) error {
-	tVal := reflect.ValueOf(config)
-	if tVal.Kind() != reflect.Ptr {
-		return errors.New("configuration struct must be a pointer")
+	cfgVal := reflect.ValueOf(config)
+
+	err := validateConfig(cfgVal)
+	if err != nil {
+		return err
 	}
 
 	providers, err := c.providerMap()
@@ -61,13 +63,7 @@ func (c *C) Parse(config interface{}) error {
 		return err
 	}
 
-	priorities := make([]int, 0, len(providers))
-	for k := range providers {
-		priorities = append(priorities, k)
-	}
-
-	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
-
+	priorities := sortPriorities(providers)
 	for _, p := range priorities {
 		provider, ok := providers[p]
 		if !ok {
@@ -80,7 +76,7 @@ func (c *C) Parse(config interface{}) error {
 			return err
 		}
 
-		mergeConfig(source, tVal)
+		mergeConfig(source, cfgVal)
 	}
 
 	return nil
@@ -117,4 +113,26 @@ func (c *C) providerMap() (map[int]Provider, error) {
 	}
 
 	return m, nil
+}
+
+func validateConfig(cfgVal reflect.Value) error {
+	if cfgVal.Kind() != reflect.Ptr {
+		return errors.New("configuration must be a pointer")
+	}
+
+	if cfgVal.Elem().Kind() != reflect.Struct {
+		return errors.New("value of configuration pointer must be a struct")
+	}
+
+	return nil
+}
+
+func sortPriorities(providers map[int]Provider) []int {
+	priorities := make([]int, 0, len(providers))
+	for k := range providers {
+		priorities = append(priorities, k)
+	}
+
+	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
+	return priorities
 }
