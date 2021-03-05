@@ -1,21 +1,15 @@
 // Package config provides support for application configuration. Configuration values can be
-// provided from multiple sources based on priority of specific configuration source (provider).
-// If the same value is configured in multiple sources, value from the source with the highest
-// priority will be applied.
+// provided from multiple sources / providers. If the same value is configured in multiple
+// sources, value from the source with the highest priority (added last to the slice of providers) will be applied.
 package config
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
-	"sort"
 )
 
 // Provider interface offers support for multiple configuration sources.
 type Provider interface {
-	// Priority of the configuration source. Priority 1 is considered the highest,
-	// priorities below 1 are not allowed.
-	Priority() int
 
 	// Provide is an interface for specific configuration source implementation. It reads values from
 	// the configuration source and maps them to the configuration struct.
@@ -49,7 +43,7 @@ func (c *C) WithProviders(providers ...Provider) {
 	c.providers = append(c.providers, providers...)
 }
 
-// Parse loops through providers based on priority and parses configuration.
+// Parse loops through providers and parses configuration.
 func (c *C) Parse(config interface{}) error {
 	cfgVal := reflect.ValueOf(config)
 
@@ -58,20 +52,9 @@ func (c *C) Parse(config interface{}) error {
 		return err
 	}
 
-	providers, err := c.providerMap()
-	if err != nil {
-		return err
-	}
-
-	priorities := sortPriorities(providers)
-	for _, p := range priorities {
-		provider, ok := providers[p]
-		if !ok {
-			return errors.New(fmt.Sprintf("no provider with priority %d found", p))
-		}
-
+	for _, p := range c.providers {
 		source := reflect.New(reflect.TypeOf(config).Elem())
-		err := provider.Provide(source.Interface())
+		err := p.Provide(source.Interface())
 		if err != nil {
 			return err
 		}
@@ -99,22 +82,6 @@ func mergeConfig(source reflect.Value, target reflect.Value) {
 	}
 }
 
-func (c *C) providerMap() (map[int]Provider, error) {
-	m := make(map[int]Provider, len(c.providers))
-
-	for _, p := range c.providers {
-		if p.Priority() < 1 {
-			return nil, errors.New("priority below 1 is not allowed")
-		}
-		if m[p.Priority()] != nil {
-			return nil, errors.New(fmt.Sprintf("get priorities must be unique: %T <-> %T", m[p.Priority()], p))
-		}
-		m[p.Priority()] = p
-	}
-
-	return m, nil
-}
-
 func validateConfig(cfgVal reflect.Value) error {
 	if cfgVal.Kind() != reflect.Ptr {
 		return errors.New("configuration must be a pointer")
@@ -125,14 +92,4 @@ func validateConfig(cfgVal reflect.Value) error {
 	}
 
 	return nil
-}
-
-func sortPriorities(providers map[int]Provider) []int {
-	priorities := make([]int, 0, len(providers))
-	for k := range providers {
-		priorities = append(priorities, k)
-	}
-
-	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
-	return priorities
 }

@@ -11,9 +11,7 @@ var provCount = 2
 
 // Additional providers used in tests
 type pFull struct{}
-type pSimple struct {
-	priority int
-}
+type pSimple struct{}
 
 func TestInitializeNewConfigWithCustomProvider(t *testing.T) {
 	c := New()
@@ -65,39 +63,12 @@ func TestInterfaceValueKind(t *testing.T) {
 	}
 }
 
-func TestUniquePriority(t *testing.T) {
-	c := New()
-	c.WithProviders(&Env{})
-	c.WithProviders(&pSimple{priority: 30})
-	err := c.Parse(&testCfg{})
-	if err == nil {
-		t.Fatalf("Error expected, but there is none.")
-	}
-
-	if !strings.Contains(err.Error(), "get priorities must be unique") {
-		t.Errorf("Uniqueness check should fail, but was: %v", err)
-	}
-}
-
-func TestPriorityBelowOne(t *testing.T) {
-	c := New()
-	c.WithProviders(&pSimple{priority: 0})
-	err := c.Parse(&testCfg{})
-	if err == nil {
-		t.Fatalf("Error expected, but there is none.")
-	}
-
-	if !strings.Contains(err.Error(), "priority below 1 is not allowed") {
-		t.Errorf("Priority check should fail, but was: %v", err)
-	}
-}
-
 func TestParseConfig(t *testing.T) {
 	c := New()
 	c.WithProviders(&pFull{})
 
-	conf := &testCfg{}
-	err := c.Parse(conf)
+	conf := testCfg{}
+	err := c.Parse(&conf)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -116,12 +87,12 @@ func TestParseConfig(t *testing.T) {
 	}
 }
 
-func TestPriorityAndSkipNonDefinedValue(t *testing.T) {
+func TestSkipNonDefinedValue(t *testing.T) {
 	c := New()
-	c.WithProviders(&pFull{}, &pSimple{priority: 90})
+	c.WithProviders(&pFull{}, &pSimple{})
 
-	conf := &testCfg{}
-	err := c.Parse(conf)
+	conf := testCfg{}
+	err := c.Parse(&conf)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -160,16 +131,8 @@ type testCfg struct {
 	}
 }
 
-func (p *pFull) Priority() int {
-	return 100
-}
-
-func (p *pSimple) Priority() int {
-	return p.priority
-}
-
 func (p *pFull) Provide(config interface{}) error {
-	cfg := &testCfg{
+	cfg := testCfg{
 		StringField: "1234string",
 		IntField:    123,
 		NestedStruct: struct {
@@ -190,18 +153,18 @@ func (p *pFull) Provide(config interface{}) error {
 		},
 	}
 
-	parse(config, cfg)
+	parse(config, &cfg)
 
 	return nil
 }
 
 func (p *pSimple) Provide(config interface{}) error {
-	cfg := &testCfg{
+	cfg := testCfg{
 		StringField: "String from simple",
 		IntField:    9999,
 	}
 
-	parse(config, cfg)
+	parse(config, &cfg)
 
 	return nil
 }

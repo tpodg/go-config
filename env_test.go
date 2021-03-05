@@ -20,7 +20,7 @@ const (
 func TestFullEnvConfigWithPrefix(t *testing.T) {
 	setUpEnv("PREF")
 
-	e := &Env{Prefix: "PREF"}
+	e := Env{Prefix: "PREF"}
 	cfg := testCfg{}
 	err := e.Provide(&cfg)
 	if err != nil {
@@ -52,7 +52,7 @@ func TestFullEnvConfigWithPrefix(t *testing.T) {
 func TestEnvConfigWithoutPrefix(t *testing.T) {
 	setUpEnv("")
 
-	e := &Env{}
+	e := Env{}
 	cfg := testCfg{}
 	err := e.Provide(&cfg)
 	if err != nil {

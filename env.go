@@ -13,11 +13,6 @@ type Env struct {
 	Prefix string
 }
 
-// Priority of env provider, set to 30
-func (e *Env) Priority() int {
-	return 30
-}
-
 // Provide loads configuration from environment variables
 func (e *Env) Provide(config interface{}) error {
 	err := provide(e.Prefix, reflect.ValueOf(config))

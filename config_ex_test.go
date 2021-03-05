@@ -4,10 +4,6 @@ import "github.com/tpodg/go-config"
 
 type pDummy struct{}
 
-func (p *pDummy) Priority() int {
-	return 100
-}
-
 func (p *pDummy) Provide(config interface{}) error {
 	return nil
 }
@@ -29,7 +25,7 @@ func ExampleC_WithProviders() {
 	}{}
 
 	c := config.New()
-	c.WithProviders(&config.Env{}, &pDummy{})
+	c.WithProviders(&pDummy{}, &config.Env{})
 
 	err := c.Parse(&cfg)
 	if err != nil {

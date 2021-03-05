@@ -1,9 +1,9 @@
 # Go Config
 
-Package config provides support for configuration of go applications. It supports multiple configuration sources based
-on priorities.  
+Package config provides support for configuration of go applications. It supports multiple configuration sources. 
 Configuration variables can be defined only partially in a single source and multiple times in various sources.
-Value for the same variable will be applied from the source with the highest priority (1).
+Value for the same variable will be applied from the source with the highest priority - added as last to the slice 
+of providers.
 
 The following configuration sources are currently provided out of the box:
 
@@ -17,14 +17,13 @@ configured and used with or without internal configuration providers.
 
 Configuration file is parsed using [go-yaml/yaml](https://github.com/go-yaml/yaml/tree/v3) module.
 "config.yaml" file must be in the same directory as the application executable.  
-Struct tags supported by the go-yaml/yaml module can be used.  
-Priority of the provider is set to 50.
+Struct tags supported by the go-yaml/yaml module can be used.
 
 ### ENV
 Environment variables should be named as uppercase field names, each nested struct name should
 be inserted with an underscore ("_") prefix and postfix.  
 Prefix of environment variables can be manually configured when env provider is initialized.  
-Priority of the provider is set to 30.
+Default configuration overwrites yaml configuration with values from environment.
 
 ## Usage
 
@@ -67,7 +66,7 @@ func main() {
 	}{}
 
 	c := config.New()
-	c.WithProviders(&config.Env{Prefix: "PREF"}, &pDummy{})
+	c.WithProviders(&pDummy{}, &config.Env{Prefix: "PREF"})
 
 	err := c.Parse(&cfg)
 	if err != nil {
@@ -76,10 +75,6 @@ func main() {
 }
 
 type pDummy struct{}
-
-func (p *pDummy) Priority() int {
-	return 100
-}
 
 func (p *pDummy) Provide(config interface{}) error {
 	// implementation
