@@ -5,12 +5,14 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 )
 
 const (
 	stringField  = "string field val"
 	intField     = 123456
 	boolField    = true
+	durField     = 10 * time.Second
 	nestedString = "nested string field val"
 	float32Field = 123.321
 	nestedInt16  = -111
@@ -34,6 +36,9 @@ func TestFullEnvConfigWithPrefix(t *testing.T) {
 	}
 	if cfg.BoolField != boolField {
 		t.Errorf("Value is '%t', but %t expected", cfg.BoolField, boolField)
+	}
+	if cfg.DurField != durField {
+		t.Errorf("Value is '%v', but %v expected", cfg.DurField, durField)
 	}
 	if cfg.NestedStruct.NestedString != nestedString {
 		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.NestedString, nestedString)
@@ -74,6 +79,7 @@ func setUpEnv(prefix string) {
 	_ = os.Setenv(p+"STRINGFIELD", stringField)
 	_ = os.Setenv(p+"INTFIELD", strconv.Itoa(intField))
 	_ = os.Setenv(p+"BOOLFIELD", strconv.FormatBool(boolField))
+	_ = os.Setenv(p+"DURFIELD", "10s")
 	_ = os.Setenv(p+"NESTEDSTRUCT_NESTEDSTRING", nestedString)
 	_ = os.Setenv(p+"NESTEDSTRUCT_FLOAT32FIELD", fmt.Sprintf("%f", float32Field))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_NESTEDINT16", strconv.Itoa(nestedInt16))

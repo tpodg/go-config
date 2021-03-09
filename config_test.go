@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Count of default providers
@@ -121,6 +122,7 @@ type testCfg struct {
 	StringField  string
 	IntField     int
 	BoolField    bool
+	DurField     time.Duration
 	NestedStruct struct {
 		NestedString string
 		Float32Field float32

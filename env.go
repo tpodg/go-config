@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Env is a provider for configuration using environment variables
@@ -67,7 +68,15 @@ func parseValue(prefix string, vField reflect.Value, tField reflect.StructField)
 			}
 			vField.SetBool(bVal)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			iVal, err := strconv.ParseInt(val, 0, vField.Type().Bits())
+			var iVal int64
+			var err error
+			if vField.Type().PkgPath() == "time" && vField.Type().Name() == "Duration" {
+				var d time.Duration
+				d, err = time.ParseDuration(val)
+				iVal = int64(d)
+			} else {
+				iVal, err = strconv.ParseInt(val, 0, vField.Type().Bits())
+			}
 			if err != nil {
 				return err
 			}
