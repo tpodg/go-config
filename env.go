@@ -55,44 +55,44 @@ func parseValue(prefix string, vField reflect.Value, tField reflect.StructField)
 	if prefix != "" {
 		prefix = strings.ToUpper(prefix) + "_"
 	}
-	val, ok := os.LookupEnv(strings.ToUpper(prefix) + strings.ToUpper(tField.Name))
+	envVal, ok := os.LookupEnv(strings.ToUpper(prefix) + strings.ToUpper(tField.Name))
 
-	if ok && vField.CanSet() {
+	if ok && envVal != "" && vField.CanSet() {
 		switch vField.Kind() {
 		case reflect.String:
-			vField.SetString(val)
+			vField.SetString(envVal)
 		case reflect.Bool:
-			bVal, err := strconv.ParseBool(val)
+			val, err := strconv.ParseBool(envVal)
 			if err != nil {
 				return err
 			}
-			vField.SetBool(bVal)
+			vField.SetBool(val)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			var iVal int64
+			var val int64
 			var err error
 			if vField.Type().PkgPath() == "time" && vField.Type().Name() == "Duration" {
 				var d time.Duration
-				d, err = time.ParseDuration(val)
-				iVal = int64(d)
+				d, err = time.ParseDuration(envVal)
+				val = int64(d)
 			} else {
-				iVal, err = strconv.ParseInt(val, 0, vField.Type().Bits())
+				val, err = strconv.ParseInt(envVal, 0, vField.Type().Bits())
 			}
 			if err != nil {
 				return err
 			}
-			vField.SetInt(iVal)
+			vField.SetInt(val)
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			iVal, err := strconv.ParseUint(val, 0, vField.Type().Bits())
+			val, err := strconv.ParseUint(envVal, 0, vField.Type().Bits())
 			if err != nil {
 				return err
 			}
-			vField.SetUint(iVal)
+			vField.SetUint(val)
 		case reflect.Float32, reflect.Float64:
-			fVal, err := strconv.ParseFloat(val, vField.Type().Bits())
+			val, err := strconv.ParseFloat(envVal, vField.Type().Bits())
 			if err != nil {
 				return err
 			}
-			vField.SetFloat(fVal)
+			vField.SetFloat(val)
 		}
 	}
 

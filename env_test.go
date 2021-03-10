@@ -71,6 +71,28 @@ func TestEnvConfigWithoutPrefix(t *testing.T) {
 	}
 }
 
+func TestEnvConfigEmptyString(t *testing.T) {
+	_ = os.Setenv("STRINGFIELD", "")
+	_ = os.Setenv("INTFIELD", "")
+
+	e := Env{}
+	cfg := testCfg{
+		StringField: stringField,
+		IntField:    intField,
+	}
+
+	err := e.Provide(&cfg)
+	if err != nil {
+		t.Fatalf("No error expected, but was: %v\n", err)
+	}
+	if cfg.StringField != stringField {
+		t.Errorf("Value is '%s', but %q expected", cfg.StringField, stringField)
+	}
+	if cfg.IntField != intField {
+		t.Errorf("Value is '%d', but %d expected", cfg.IntField, intField)
+	}
+}
+
 func setUpEnv(prefix string) {
 	p := ""
 	if prefix != "" {
