@@ -40,8 +40,8 @@ func TestFullEnvConfigWithPrefix(t *testing.T) {
 	if cfg.DurField != durField {
 		t.Errorf("Value is '%v', but %v expected", cfg.DurField, durField)
 	}
-	if cfg.NestedStruct.NestedString != nestedString {
-		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.NestedString, nestedString)
+	if cfg.NestedStruct.StringSlice[0] != nestedString {
+		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.StringSlice[0], nestedString)
 	}
 	if cfg.NestedStruct.Float32Field != float32Field {
 		t.Errorf("Value is '%f', but %f expected", cfg.NestedStruct.Float32Field, float32Field)
@@ -93,6 +93,31 @@ func TestEnvConfigEmptyString(t *testing.T) {
 	}
 }
 
+func TestEnvConfigSlice(t *testing.T) {
+	_ = os.Setenv("NESTEDSTRUCT_STRINGSLICE", "val 1,  val   2  ,   val3")
+
+	e := Env{}
+	cfg := testCfg{}
+
+	err := e.Provide(&cfg)
+	if err != nil {
+		t.Fatalf("No error expected, but was: %v\n", err)
+	}
+
+	exp := "val 1"
+	if cfg.NestedStruct.StringSlice[0] != exp {
+		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.StringSlice[0], exp)
+	}
+	exp = "val   2"
+	if cfg.NestedStruct.StringSlice[1] != exp {
+		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.StringSlice[1], exp)
+	}
+	exp = "val3"
+	if cfg.NestedStruct.StringSlice[2] != exp {
+		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.StringSlice[2], exp)
+	}
+}
+
 func setUpEnv(prefix string) {
 	p := ""
 	if prefix != "" {
@@ -102,7 +127,7 @@ func setUpEnv(prefix string) {
 	_ = os.Setenv(p+"INTFIELD", strconv.Itoa(intField))
 	_ = os.Setenv(p+"BOOLFIELD", strconv.FormatBool(boolField))
 	_ = os.Setenv(p+"DURFIELD", "10s")
-	_ = os.Setenv(p+"NESTEDSTRUCT_NESTEDSTRING", nestedString)
+	_ = os.Setenv(p+"NESTEDSTRUCT_STRINGSLICE", nestedString)
 	_ = os.Setenv(p+"NESTEDSTRUCT_FLOAT32FIELD", fmt.Sprintf("%f", float32Field))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_NESTEDINT16", strconv.Itoa(nestedInt16))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_UINT8FIELD", strconv.Itoa(uint8Filed))

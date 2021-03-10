@@ -55,46 +55,61 @@ func parseValue(prefix string, vField reflect.Value, tField reflect.StructField)
 	if prefix != "" {
 		prefix = strings.ToUpper(prefix) + "_"
 	}
-	envVal, ok := os.LookupEnv(strings.ToUpper(prefix) + strings.ToUpper(tField.Name))
 
+	envVal, ok := os.LookupEnv(strings.ToUpper(prefix) + strings.ToUpper(tField.Name))
 	if ok && envVal != "" && vField.CanSet() {
-		switch vField.Kind() {
-		case reflect.String:
-			vField.SetString(envVal)
-		case reflect.Bool:
-			val, err := strconv.ParseBool(envVal)
-			if err != nil {
-				return err
-			}
-			vField.SetBool(val)
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			var val int64
-			var err error
-			if vField.Type().PkgPath() == "time" && vField.Type().Name() == "Duration" {
-				var d time.Duration
-				d, err = time.ParseDuration(envVal)
-				val = int64(d)
-			} else {
-				val, err = strconv.ParseInt(envVal, 0, vField.Type().Bits())
-			}
-			if err != nil {
-				return err
-			}
-			vField.SetInt(val)
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			val, err := strconv.ParseUint(envVal, 0, vField.Type().Bits())
-			if err != nil {
-				return err
-			}
-			vField.SetUint(val)
-		case reflect.Float32, reflect.Float64:
-			val, err := strconv.ParseFloat(envVal, vField.Type().Bits())
-			if err != nil {
-				return err
-			}
-			vField.SetFloat(val)
+		if err := processField(vField, envVal); err != nil {
+			return err
 		}
 	}
+	return nil
+}
 
+func processField(vField reflect.Value, envVal string) error {
+	switch vField.Kind() {
+	case reflect.String:
+		vField.SetString(envVal)
+	case reflect.Bool:
+		val, err := strconv.ParseBool(envVal)
+		if err != nil {
+			return err
+		}
+		vField.SetBool(val)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		var val int64
+		var err error
+		if vField.Type().PkgPath() == "time" && vField.Type().Name() == "Duration" {
+			var d time.Duration
+			d, err = time.ParseDuration(envVal)
+			val = int64(d)
+		} else {
+			val, err = strconv.ParseInt(envVal, 0, vField.Type().Bits())
+		}
+		if err != nil {
+			return err
+		}
+		vField.SetInt(val)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		val, err := strconv.ParseUint(envVal, 0, vField.Type().Bits())
+		if err != nil {
+			return err
+		}
+		vField.SetUint(val)
+	case reflect.Float32, reflect.Float64:
+		val, err := strconv.ParseFloat(envVal, vField.Type().Bits())
+		if err != nil {
+			return err
+		}
+		vField.SetFloat(val)
+	case reflect.Slice:
+		vals := strings.Split(envVal, ",")
+		s := reflect.MakeSlice(vField.Type(), len(vals), len(vals))
+		for i, val := range vals {
+			if err := processField(s.Index(i), strings.TrimSpace(val)); err != nil {
+				return err
+			}
+		}
+		vField.Set(s)
+	}
 	return nil
 }

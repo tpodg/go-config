@@ -80,8 +80,8 @@ func TestParseConfig(t *testing.T) {
 	if conf.IntField != 123 {
 		t.Errorf("Value is '%d', but '123' expected", conf.IntField)
 	}
-	if conf.NestedStruct.NestedString != "nested value" {
-		t.Errorf("Value is '%s', but 'nested value' expected", conf.NestedStruct.NestedString)
+	if conf.NestedStruct.StringSlice[1] != "val 2" {
+		t.Errorf("Value is '%s', but 'val 2' expected", conf.NestedStruct.StringSlice[1])
 	}
 	if conf.NestedStruct.AnotherLevel.NestedInt16 != 321 {
 		t.Errorf("Value is '%d', but '321' expected", conf.NestedStruct.AnotherLevel.NestedInt16)
@@ -104,8 +104,8 @@ func TestSkipNonDefinedValue(t *testing.T) {
 	if conf.IntField != 9999 {
 		t.Errorf("Value is '%d', but '9999' expected", conf.IntField)
 	}
-	if conf.NestedStruct.NestedString != "nested value" {
-		t.Errorf("Value is '%s', but 'nested value' expected", conf.NestedStruct.NestedString)
+	if conf.NestedStruct.StringSlice[1] != "val 2" {
+		t.Errorf("Value is '%s', but 'val 2' expected", conf.NestedStruct.StringSlice[1])
 	}
 	if conf.NestedStruct.AnotherLevel.NestedInt16 != 321 {
 		t.Errorf("Value is '%d', but '321' expected", conf.NestedStruct.AnotherLevel.NestedInt16)
@@ -124,7 +124,7 @@ type testCfg struct {
 	BoolField    bool
 	DurField     time.Duration
 	NestedStruct struct {
-		NestedString string
+		StringSlice  []string
 		Float32Field float32
 		AnotherLevel struct {
 			NestedInt16 int16
@@ -138,14 +138,14 @@ func (p *pFull) Provide(config interface{}) error {
 		StringField: "1234string",
 		IntField:    123,
 		NestedStruct: struct {
-			NestedString string
+			StringSlice  []string
 			Float32Field float32
 			AnotherLevel struct {
 				NestedInt16 int16
 				Uint8Field  uint8
 			}
 		}{
-			NestedString: "nested value",
+			StringSlice: []string{"val 1", "val 2", "val 3"},
 			AnotherLevel: struct {
 				NestedInt16 int16
 				Uint8Field  uint8
