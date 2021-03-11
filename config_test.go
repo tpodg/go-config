@@ -107,6 +107,9 @@ func TestSkipNonDefinedValue(t *testing.T) {
 	if conf.NestedStruct.StringSlice[1] != "val 2" {
 		t.Errorf("Value is '%s', but 'val 2' expected", conf.NestedStruct.StringSlice[1])
 	}
+	if conf.NestedStruct.Float32Field != 4545.1212 {
+		t.Errorf("Value is '%f', but '4545.1212' expected", conf.NestedStruct.Float32Field)
+	}
 	if conf.NestedStruct.AnotherLevel.NestedInt16 != 321 {
 		t.Errorf("Value is '%d', but '321' expected", conf.NestedStruct.AnotherLevel.NestedInt16)
 	}
@@ -164,6 +167,16 @@ func (p *pSimple) Provide(config interface{}) error {
 	cfg := testCfg{
 		StringField: "String from simple",
 		IntField:    9999,
+		NestedStruct: struct {
+			StringSlice  []string
+			Float32Field float32
+			AnotherLevel struct {
+				NestedInt16 int16
+				Uint8Field  uint8
+			}
+		}{
+			Float32Field: 4545.1212,
+		},
 	}
 
 	parse(config, &cfg)

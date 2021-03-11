@@ -76,7 +76,9 @@ func mergeConfig(source reflect.Value, target reflect.Value) {
 	t := target.Elem()
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		if f.CanSet() && !s.Field(i).IsZero() {
+		if f.Kind() == reflect.Struct {
+			mergeConfig(s.Field(i).Addr(), f.Addr())
+		} else if f.CanSet() && !s.Field(i).IsZero() {
 			f.Set(s.Field(i))
 		}
 	}
