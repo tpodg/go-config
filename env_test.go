@@ -96,11 +96,10 @@ func TestEnvConfigEmptyString(t *testing.T) {
 func TestEnvConfigSlice(t *testing.T) {
 	_ = os.Setenv("NESTEDSTRUCT_STRINGSLICE", "val 1,  val   2  ,   val3")
 
-	e := Env{}
 	cfg := testCfg{}
 
-	err := e.Provide(&cfg)
-	if err != nil {
+	e := Env{}
+	if err := e.Provide(&cfg); err != nil {
 		t.Fatalf("No error expected, but was: %v\n", err)
 	}
 
@@ -115,6 +114,34 @@ func TestEnvConfigSlice(t *testing.T) {
 	exp = "val3"
 	if cfg.NestedStruct.StringSlice[2] != exp {
 		t.Errorf("Value is '%s', but %q expected", cfg.NestedStruct.StringSlice[2], exp)
+	}
+}
+
+func TestNestedStructs(t *testing.T) {
+	_ = os.Setenv("WRAPPER_NESTED1_NESTED1VAL", "val 1")
+	_ = os.Setenv("WRAPPER_NESTED2_NESTED2VAL", "val 2")
+
+	var cfg struct {
+		Wrapper struct {
+			Nested1 struct {
+				Nested1Val string
+			}
+			Nested2 struct {
+				Nested2Val string
+			}
+		}
+	}
+
+	e := Env{}
+	if err := e.Provide(&cfg); err != nil {
+		t.Fatalf("No error expected, but was: %v\n", err)
+	}
+
+	if cfg.Wrapper.Nested1.Nested1Val != "val 1" {
+		t.Errorf("Value is '%s', but %q expected", cfg.Wrapper.Nested1.Nested1Val, "val 1")
+	}
+	if cfg.Wrapper.Nested2.Nested2Val != "val 2" {
+		t.Errorf("Value is '%s', but %q expected", cfg.Wrapper.Nested2.Nested2Val, "val 2")
 	}
 }
 

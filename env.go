@@ -33,7 +33,7 @@ func provide(prefix string, config reflect.Value) error {
 		tf := tt.Field(i)
 
 		if vf.Kind() == reflect.Struct {
-			if prefix != "" {
+			if prefix != "" && !strings.HasSuffix(prefix, "_") {
 				prefix += "_"
 			}
 			err := provide(prefix+tf.Name, vf.Addr())
