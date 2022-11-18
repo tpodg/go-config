@@ -134,6 +134,13 @@ type testCfg struct {
 			Uint8Field  uint8
 		}
 	}
+	SecondNestedStruct struct {
+		StringField string
+		StructField struct {
+			StringField string
+		}
+		SecondStringField string
+	}
 }
 
 func (p *pFull) Provide(config interface{}) error {
@@ -155,6 +162,21 @@ func (p *pFull) Provide(config interface{}) error {
 			}{
 				NestedInt16: 321,
 			},
+		},
+		SecondNestedStruct: struct {
+			StringField string
+			StructField struct {
+				StringField string
+			}
+			SecondStringField string
+		}{
+			StringField: "nested-123",
+			StructField: struct {
+				StringField string
+			}{
+				StringField: "inner-nested",
+			},
+			SecondStringField: "nested-123",
 		},
 	}
 

@@ -69,6 +69,15 @@ func TestEnvConfigWithoutPrefix(t *testing.T) {
 	if cfg.NestedStruct.AnotherLevel.Uint8Field != uint8Filed {
 		t.Errorf("Value is '%d', but %d expected", cfg.NestedStruct.AnotherLevel.Uint8Field, uint8Filed)
 	}
+	if cfg.SecondNestedStruct.StringField != nestedString {
+		t.Errorf("Value is '%s', but %q expected", cfg.SecondNestedStruct.StringField, nestedString)
+	}
+	if cfg.SecondNestedStruct.SecondStringField != nestedString {
+		t.Errorf("Value is '%s', but %q expected", cfg.SecondNestedStruct.SecondStringField, nestedString)
+	}
+	if cfg.SecondNestedStruct.StructField.StringField != nestedString {
+		t.Errorf("Value is '%s', but %q expected", cfg.SecondNestedStruct.StructField.StringField, nestedString)
+	}
 }
 
 func TestEnvConfigEmptyString(t *testing.T) {
@@ -158,4 +167,7 @@ func setUpEnv(prefix string) {
 	_ = os.Setenv(p+"NESTEDSTRUCT_FLOAT32FIELD", fmt.Sprintf("%f", float32Field))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_NESTEDINT16", strconv.Itoa(nestedInt16))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_UINT8FIELD", strconv.Itoa(uint8Filed))
+	_ = os.Setenv(p+"SECONDNESTEDSTRUCT_STRINGFIELD", nestedString)
+	_ = os.Setenv(p+"SECONDNESTEDSTRUCT_STRUCTFIELD_STRINGFIELD", nestedString)
+	_ = os.Setenv(p+"SECONDNESTEDSTRUCT_SECONDSTRINGFIELD", nestedString)
 }

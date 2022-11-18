@@ -52,7 +52,7 @@ func provide(prefix string, config reflect.Value) error {
 }
 
 func parseValue(prefix string, vField reflect.Value, tField reflect.StructField) error {
-	if prefix != "" {
+	if prefix != "" && !strings.HasSuffix(prefix, "_") {
 		prefix = strings.ToUpper(prefix) + "_"
 	}
 
