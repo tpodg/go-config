@@ -1,5 +1,5 @@
 module github.com/tpodg/go-config
 
-go 1.19
+go 1.21.0
 
-require gopkg.in/yaml.v3 v3.0.1
+require github.com/goccy/go-yaml v1.19.1

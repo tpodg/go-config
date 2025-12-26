@@ -1,18 +1,20 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/goccy/go-yaml"
 )
 
 // Yaml is a provider for configuration using yaml file
-type Yaml struct{}
+type Yaml struct {
+	Path string
+}
 
 // Provide loads configuration from yaml file
 func (y *Yaml) Provide(config interface{}) error {
-	b, err := readFile()
+	b, err := y.readFile()
 	if err != nil {
 		return err
 	}
@@ -25,19 +27,30 @@ func (y *Yaml) Provide(config interface{}) error {
 	return nil
 }
 
-func readFile() ([]byte, error) {
+func (y *Yaml) readFile() ([]byte, error) {
+	p, err := y.resolvePath()
+	if err != nil {
+		return nil, err
+	}
+
+	return os.ReadFile(p)
+}
+
+func (y *Yaml) resolvePath() (string, error) {
+	if filepath.IsAbs(y.Path) {
+		return y.Path, nil
+	}
+
 	dir, err := execDir()
-	p, err := filepath.Abs(dir + "/config.yaml")
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	b, err := ioutil.ReadFile(p)
-	if err != nil {
-		return nil, err
+	if y.Path != "" {
+		return filepath.Join(dir, y.Path), nil
 	}
 
-	return b, nil
+	return filepath.Join(dir, "config.yaml"), nil
 }
 
 func execDir() (string, error) {
