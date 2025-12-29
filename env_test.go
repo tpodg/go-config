@@ -103,7 +103,9 @@ func TestEnvConfigEmptyString(t *testing.T) {
 }
 
 func TestEnvConfigSlice(t *testing.T) {
-	_ = os.Setenv("NESTEDSTRUCT_STRINGSLICE", "val 1,  val   2  ,   val3")
+	_ = os.Setenv("NESTEDSTRUCT_STRINGSLICE_0", "val 1")
+	_ = os.Setenv("NESTEDSTRUCT_STRINGSLICE_1", "val   2")
+	_ = os.Setenv("NESTEDSTRUCT_STRINGSLICE_2", "val3")
 
 	cfg := testCfg{}
 
@@ -154,6 +156,71 @@ func TestNestedStructs(t *testing.T) {
 	}
 }
 
+func TestEnvConfigYamlTags(t *testing.T) {
+	_ = os.Setenv("WRAPPER_TAG_ONE", "val-1")
+	_ = os.Setenv("WRAPPER_TAG_TWO", "val-2")
+
+	var cfg struct {
+		Wrapper struct {
+			TagOne string `yaml:"tag_one"`
+			TagTwo string `yaml:"tag_two"`
+		} `yaml:"wrapper"`
+	}
+
+	e := Env{}
+	if err := e.Provide(&cfg); err != nil {
+		t.Fatalf("No error expected, but was: %v\n", err)
+	}
+
+	if cfg.Wrapper.TagOne != "val-1" {
+		t.Errorf("Value is '%s', but %q expected", cfg.Wrapper.TagOne, "val-1")
+	}
+	if cfg.Wrapper.TagTwo != "val-2" {
+		t.Errorf("Value is '%s', but %q expected", cfg.Wrapper.TagTwo, "val-2")
+	}
+}
+
+func TestEnvConfigMap(t *testing.T) {
+	_ = os.Setenv("MAPFIELD_BUILD", "go build")
+	_ = os.Setenv("MAPFIELD_TEST", "go test")
+
+	var cfg struct {
+		MapField map[string]any
+	}
+
+	e := Env{}
+	if err := e.Provide(&cfg); err != nil {
+		t.Fatalf("No error expected, but was: %v\n", err)
+	}
+
+	if len(cfg.MapField) != 2 {
+		t.Fatalf("Expected 2 map entries, got %d", len(cfg.MapField))
+	}
+	if cfg.MapField["build"] != "go build" {
+		t.Errorf("Value is '%v', but %q expected", cfg.MapField["build"], "go build")
+	}
+}
+
+func TestEnvConfigPointer(t *testing.T) {
+	_ = os.Setenv("USE_AGENT", "true")
+
+	var cfg struct {
+		UseAgent *bool `yaml:"use_agent"`
+	}
+
+	e := Env{}
+	if err := e.Provide(&cfg); err != nil {
+		t.Fatalf("No error expected, but was: %v\n", err)
+	}
+
+	if cfg.UseAgent == nil {
+		t.Fatal("UseAgent should not be nil")
+	}
+	if *cfg.UseAgent != true {
+		t.Errorf("Value is '%t', but %t expected", *cfg.UseAgent, true)
+	}
+}
+
 func setUpEnv(prefix string) {
 	p := ""
 	if prefix != "" {
@@ -163,7 +230,7 @@ func setUpEnv(prefix string) {
 	_ = os.Setenv(p+"INTFIELD", strconv.Itoa(intField))
 	_ = os.Setenv(p+"BOOLFIELD", strconv.FormatBool(boolField))
 	_ = os.Setenv(p+"DURFIELD", "10s")
-	_ = os.Setenv(p+"NESTEDSTRUCT_STRINGSLICE", nestedString)
+	_ = os.Setenv(p+"NESTEDSTRUCT_STRINGSLICE_0", nestedString)
 	_ = os.Setenv(p+"NESTEDSTRUCT_FLOAT32FIELD", fmt.Sprintf("%f", float32Field))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_NESTEDINT16", strconv.Itoa(nestedInt16))
 	_ = os.Setenv(p+"NESTEDSTRUCT_ANOTHERLEVEL_UINT8FIELD", strconv.Itoa(uint8Filed))

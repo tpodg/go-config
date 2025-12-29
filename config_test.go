@@ -13,6 +13,8 @@ var provCount = 2
 // Additional providers used in tests
 type pFull struct{}
 type pSimple struct{}
+type pMapBase struct{}
+type pMapOverride struct{}
 
 func TestInitializeNewConfigWithCustomProvider(t *testing.T) {
 	c := New()
@@ -115,6 +117,37 @@ func TestSkipNonDefinedValue(t *testing.T) {
 	}
 }
 
+func TestMergeMapConfig(t *testing.T) {
+	c := New()
+	c.WithProviders(&pMapBase{}, &pMapOverride{})
+
+	cfg := mapCfg{}
+	if err := c.Parse(&cfg); err != nil {
+		t.Fatalf("%v\n", err)
+	}
+
+	if cfg.MapField["build"] != "go build env" {
+		t.Errorf("Value is '%v', but %q expected", cfg.MapField["build"], "go build env")
+	}
+	if cfg.MapField["test"] != "go test" {
+		t.Errorf("Value is '%v', but %q expected", cfg.MapField["test"], "go test")
+	}
+
+	nested, ok := cfg.MapField["nested"].(map[string]any)
+	if !ok {
+		t.Fatalf("Expected nested map, got %T", cfg.MapField["nested"])
+	}
+	if nested["a"] != 1 {
+		t.Errorf("Value is '%v', but %d expected", nested["a"], 1)
+	}
+	if nested["b"] != 3 {
+		t.Errorf("Value is '%v', but %d expected", nested["b"], 3)
+	}
+	if nested["c"] != 4 {
+		t.Errorf("Value is '%v', but %d expected", nested["c"], 4)
+	}
+}
+
 func assertProviderCount(t *testing.T, expected int, actual int) {
 	if actual != expected {
 		t.Fatalf("Configured providers: %d, but %d expected", actual, expected)
@@ -141,6 +174,10 @@ type testCfg struct {
 		}
 		SecondStringField string
 	}
+}
+
+type mapCfg struct {
+	MapField map[string]any
 }
 
 func (p *pFull) Provide(config interface{}) error {
@@ -203,6 +240,31 @@ func (p *pSimple) Provide(config interface{}) error {
 
 	parse(config, &cfg)
 
+	return nil
+}
+
+func (p *pMapBase) Provide(config interface{}) error {
+	cfg := config.(*mapCfg)
+	cfg.MapField = map[string]any{
+		"build": "go build",
+		"test":  "go test",
+		"nested": map[string]any{
+			"a": 1,
+			"b": 2,
+		},
+	}
+	return nil
+}
+
+func (p *pMapOverride) Provide(config interface{}) error {
+	cfg := config.(*mapCfg)
+	cfg.MapField = map[string]any{
+		"build": "go build env",
+		"nested": map[string]any{
+			"b": 3,
+			"c": 4,
+		},
+	}
 	return nil
 }
 

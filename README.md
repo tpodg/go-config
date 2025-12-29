@@ -23,8 +23,29 @@ Struct tags supported by the goccy/go-yaml module can be used.
 ### ENV
 Environment variables should be named as uppercase field names, each nested struct name should
 be inserted with an underscore ("_") prefix and postfix.  
+If a `yaml` tag is present, its name is used instead of the field name.  
 Prefix of environment variables can be manually configured when env provider is initialized.  
 Default configuration overwrites yaml configuration with values from environment.
+Slice values are provided by addressable index env vars (0-based).
+Map values are provided by addressable keys (case-insensitive).
+
+### Minimal example
+
+`config.yaml`:
+```yaml
+fleet:
+  hosts:
+    - profile:
+        token: from-yaml
+labels:
+  stage: from-yaml
+```
+
+Env:
+```
+FLEET_HOSTS_0_PROFILE_TOKEN=from-env
+LABELS_STAGE=from-env
+```
 
 ## Usage
 
